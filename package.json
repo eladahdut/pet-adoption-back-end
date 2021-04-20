@@ -1,0 +1,24 @@
+{
+  "name": "pet-adoption-backend-eladahdut",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/israeltechchallenge/pet-adoption-backend-eladahdut.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/israeltechchallenge/pet-adoption-backend-eladahdut/issues"
+  },
+  "homepage": "https://github.com/israeltechchallenge/pet-adoption-backend-eladahdut#readme",
+  "dependencies": {
+    "express": "^4.17.1",
+    "mongoose": "^5.12.5",
+    "nodemon": "^2.0.7"
+  }
+}
