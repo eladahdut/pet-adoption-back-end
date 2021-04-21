@@ -6,9 +6,11 @@ const cors = require("cors");
 require("dotenv/config");
 
 const postsRoute = require("./routes/posts");
+const petsRoute = require("./routes/pets");
 
 app.use(cors());
 app.use(bodyParser.json());
+app.use("/pets", petsRoute);
 app.use("/posts", postsRoute);
 
 app.get("/", (req, res) => {

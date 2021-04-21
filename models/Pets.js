@@ -30,7 +30,7 @@ const PetsSchema = mongoose.Schema({
     required: true,
   },
   bio: {
-    type: Number,
+    type: String,
     required: true,
   },
   hypoalerganic: {
