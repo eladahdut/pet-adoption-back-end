@@ -33,7 +33,7 @@ const PetsSchema = mongoose.Schema({
     type: String,
     required: true,
   },
-  hypoalerganic: {
+  hypoallergenic: {
     type: Boolean,
     required: true,
   },
@@ -45,6 +45,7 @@ const PetsSchema = mongoose.Schema({
     type: String,
     required: true,
   },
+  //likedPets: []
 });
 
 module.exports = mongoose.model("Pets", PetsSchema);

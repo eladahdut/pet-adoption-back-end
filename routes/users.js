@@ -14,6 +14,7 @@ router.get("/", async (req, res) => {
   }
 });
 
+
 //POST new user sign up.
 router.post("/signup", async (req, res) => {
   //validate data before creating user
@@ -37,6 +38,7 @@ router.post("/signup", async (req, res) => {
     email: req.body.email,
     password: hashPassword,
     repeatPassword: hashRepeatPassword,
+    // likedPets: [],
   });
   try {
     const savedUser = await user.save();
@@ -45,6 +47,7 @@ router.post("/signup", async (req, res) => {
     res.json({ message: err });
   }
 });
+
 
 //POST Login
 router.post("/login", async (req, res) => {
@@ -63,14 +66,15 @@ router.post("/login", async (req, res) => {
   res.header("auth-token", token).send(token);
 });
 
-// router.get("/:postId", async (req, res) => {
-//     try {
-//         const post = await Post.findById(req.params.postId);
-//         res.json(post);
-//     } catch (err) {
-//         res.json({ message: err });
-//     }
-// });
+//GET user by id
+router.get("/user/:id", async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    res.json(user);
+  } catch (err) {
+    res.json({ message: err });
+  }
+});
 
 // router.delete("/:postId", async (req, res) => {
 //     try {
@@ -81,16 +85,27 @@ router.post("/login", async (req, res) => {
 //     }
 // });
 
-// router.patch("/:postId", async (req, res) => {
-//     try {
-//         const updatedPost = await Post.updateOne(
-//             { _id: req.params.postId },
-//             { $set: { title: req.body.title } }
-//         );
-//         res.json(updatedPost);
-//     } catch (err) {
-//         res.json({ message: err });
-//     }
-// });
+//PUT update user info
+router.put("/user/:id", async (req, res) => {
+  const salt = await bcrypt.genSalt(10);
+  const hashPassword = await bcrypt.hash(req.body.password, salt);
+  try {
+    const updatedUser = await User.updateOne(
+      { _id: req.params.id },
+      {
+        $set: {
+          firstName: req.body.firstName,
+          lastName: req.body.lastName,
+          phone: req.body.phone,
+          email: req.body.email,
+          password: hashPassword,
+        },
+      }
+    );
+    res.json(updatedUser);
+  } catch (err) {
+    res.json({ message: err });
+  }
+});
 
 module.exports = router;
