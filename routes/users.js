@@ -4,7 +4,8 @@ const User = require("../models/Users");
 const { registerValidation, loginValidation } = require("../validation");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-//GET all users.
+
+//GET all users (***admin only***)
 router.get("/", async (req, res) => {
   try {
     const users = await User.find();
@@ -14,12 +15,11 @@ router.get("/", async (req, res) => {
   }
 });
 
-
 //POST new user sign up.
 router.post("/signup", async (req, res) => {
   //validate data before creating user
   const { error } = registerValidation(req.body);
-  if (error) return res.status(400).send(error.details[ 0 ].message);
+  if (error) return res.status(400).send(error.details[0].message);
 
   //checking if the user is already in the database
   const emailExist = await User.findOne({ email: req.body.email });
@@ -39,6 +39,8 @@ router.post("/signup", async (req, res) => {
     password: hashPassword,
     repeatPassword: hashRepeatPassword,
     // likedPets: [],
+    // fosterdPets: [],
+    // adoptedPets: [],
   });
   try {
     const savedUser = await user.save();
@@ -48,12 +50,11 @@ router.post("/signup", async (req, res) => {
   }
 });
 
-
 //POST Login
 router.post("/login", async (req, res) => {
   //Validate date before user login
   const { error } = loginValidation(req.body);
-  if (error) return res.status(400).send(error.details[ 0 ].message);
+  if (error) return res.status(400).send(error.details[0].message);
   //Checking if the user exists
   const user = await User.findOne({ email: req.body.email });
   if (!user) return res.status(400).send("Email not found");
@@ -70,7 +71,8 @@ router.post("/login", async (req, res) => {
 router.get("/user/:id", async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
-    res.json(user);
+    const { firstName, lastName, phone, email } = user;
+    res.json({ firstName, lastName, phone, email });
   } catch (err) {
     res.json({ message: err });
   }

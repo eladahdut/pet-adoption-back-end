@@ -1,7 +1,8 @@
 const express = require("express");
-const { number } = require("joi");
 const router = express.Router();
 const Pets = require("../models/Pets");
+const verifyToken = require("./verifyToken");
+// const { number } = require("joi");
 
 //GET all pets
 router.get("/", async (req, res) => {
@@ -14,8 +15,20 @@ router.get("/", async (req, res) => {
 });
 
 // POST new pet (only admin)
-router.post("/", async (req, res) => {
-  const { type, name, adoptionStatus, picture, height, weight, color, bio, hypoallergenic, dietaryRestrictions, breed } = req.body;
+router.post("/pet", async (req, res) => {
+  const {
+    type,
+    name,
+    adoptionStatus,
+    picture,
+    height,
+    weight,
+    color,
+    bio,
+    hypoallergenic,
+    dietaryRestrictions,
+    breed,
+  } = req.body;
   const post = new Pets({
     type,
     name,
@@ -28,6 +41,9 @@ router.post("/", async (req, res) => {
     hypoallergenic,
     dietaryRestrictions,
     breed,
+    likedBy: [],
+    fosterdBy: [],
+    adoptedBy: [],
   });
   try {
     const savedPet = await post.save();
@@ -60,7 +76,19 @@ router.delete("/pet/:petId/save", async (req, res) => {
 //EDIT pet by ID
 router.patch("/pet/:petId", async (req, res) => {
   try {
-    const { type, name, adoptionStatus, picture, height, weight, color, bio, hypoallergenic, dietaryRestrictions, breed } = req.body;
+    const {
+      type,
+      name,
+      adoptionStatus,
+      picture,
+      height,
+      weight,
+      color,
+      bio,
+      hypoallergenic,
+      dietaryRestrictions,
+      breed,
+    } = req.body;
     const updatedPet = await Pets.updateOne(
       { _id: req.params.petId },
       {
@@ -86,10 +114,18 @@ router.patch("/pet/:petId", async (req, res) => {
 });
 
 //GET pet by criteria
-router.get('/search/:criteria', (req, res) => {
+router.get("/search/:criteria", (req, res) => {
   const mySearch = req.params.criteria;
-  console.log(typeof (mySearch));
-  Pets.find({ $or: [ { adoptionStatus: mySearch }, { type: mySearch }, { name: mySearch }, { height: mySearch }, { weight: mySearch }, ] })
+  console.log(typeof mySearch);
+  Pets.find({
+    $or: [
+      { adoptionStatus: mySearch },
+      { type: mySearch },
+      { name: mySearch },
+      { height: mySearch },
+      { weight: mySearch },
+    ],
+  })
     .then((data) => {
       res.status(200).json(data);
     })
@@ -98,9 +134,9 @@ router.get('/search/:criteria', (req, res) => {
     });
 });
 
-
 // POST update adopt/foster pet (protected to logged in users)
-// router.post("/pet/:id/adopt", (req, res) => {
+router.post("/pet/:id/adopt", verifyToken, (req, res) => {
+  const { userId } = req.user._id;
+});
 
-// })
 module.exports = router;
