@@ -13,7 +13,7 @@ const registerValidation = (data) => {
       .pattern(/^[0-9]+$/)
       .required(),
     email: Joi.string()
-      .email({ minDomainSegments: 2, tlds: { allow: ["com", "net"] } })
+      .email({ minDomainSegments: 2, tlds: { allow: [ "com", "net" ] } })
       .required(),
     password: Joi.string()
       .pattern(new RegExp("^[a-zA-Z0-9]{3,30}$"))
@@ -28,13 +28,13 @@ const registerValidation = (data) => {
 const loginValidation = (data) => {
   const schema = Joi.object({
     email: Joi.string()
-      .email({ minDomainSegments: 2, tlds: { allow: ["com", "net"] } })
+      .email({ minDomainSegments: 2, tlds: { allow: [ "com", "net" ] } })
       .required(),
     password: Joi.string()
       .pattern(new RegExp("^[a-zA-Z0-9]{3,30}$"))
       .required(),
     likedBy: Joi.array().items(Joi.string()),
-    fosterdBy: Joi.array().items(Joi.string()),
+    fosteredBy: Joi.array().items(Joi.string()),
     adoptedBy: Joi.array().items(Joi.string()),
   });
   return schema.validate(data);

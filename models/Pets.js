@@ -45,9 +45,9 @@ const PetsSchema = mongoose.Schema({
     type: String,
     required: true,
   },
-  likedBy: [String],
-  fosterdBy: [String],
-  adoptedBy: [String],
+  likedBy: [ String ],
+  fosteredBy: [ String ],
+  adoptedBy: [ String ],
 });
 
 module.exports = mongoose.model("Pets", PetsSchema);

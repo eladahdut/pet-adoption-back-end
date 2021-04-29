@@ -42,7 +42,7 @@ router.post("/pet", async (req, res) => {
     dietaryRestrictions,
     breed,
     likedBy: [],
-    fosterdBy: [],
+    fosteredBy: [],
     adoptedBy: [],
   });
   try {
@@ -135,8 +135,28 @@ router.get("/search/:criteria", (req, res) => {
 });
 
 // POST update adopt/foster pet (protected to logged in users)
-router.post("/pet/:id/adopt", verifyToken, (req, res) => {
+router.post("/pet/:id/adopt", verifyToken, async (req, res) => {
   const { userId } = req.user._id;
+  const { adoptionStatus } = req.body;
+  try {
+    const updatedPet = await Pets.updateOne(
+      { _id: req.params.id },
+      {
+        $switch: {
+          branches: [
+            { case: adoptionStatus === "Adopted", then: { $set: { adoptionStatus: `${adoptionStatus}` } } },
+            { case: adoptionStatus === "Fostered", then: { $set: { adoptionStatus: `${adoptionStatus}` } } },
+          ],
+          default: { $set: { adoptionStatus: "Available" } }
+        }
+      }
+    );
+    // const update = updatedPet.save();
+    res.json(updatedPet);
+    console.log(adoptionStatus);
+  } catch (err) {
+    res.json({ message: err });
+  }
 });
 
 module.exports = router;
