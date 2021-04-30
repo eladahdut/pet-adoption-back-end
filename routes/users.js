@@ -38,9 +38,9 @@ router.post("/signup", async (req, res) => {
     email: req.body.email,
     password: hashPassword,
     repeatPassword: hashRepeatPassword,
-    // likedPets: [],
-    // fosterdPets: [],
-    // adoptedPets: [],
+    likedPets: [],
+    fosterdPets: [],
+    adoptedPets: [],
   });
   try {
     const savedUser = await user.save();

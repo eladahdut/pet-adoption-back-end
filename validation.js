@@ -19,9 +19,9 @@ const registerValidation = (data) => {
       .pattern(new RegExp("^[a-zA-Z0-9]{3,30}$"))
       .required(),
     repeatPassword: Joi.ref("password"),
-    // likedPets: Joi.array().items(Joi.string()),
-    // fosterdPets: Joi.array().items(Joi.string()),
-    // adoptedPets: Joi.array().items(Joi.string()),
+    likedPets: Joi.array().items(Joi.string()),
+    fosterdPets: Joi.array().items(Joi.string()),
+    adoptedPets: Joi.array().items(Joi.string()),
   });
   return schema.validate(data);
 };
@@ -34,8 +34,8 @@ const loginValidation = (data) => {
       .pattern(new RegExp("^[a-zA-Z0-9]{3,30}$"))
       .required(),
     likedBy: Joi.array().items(Joi.string()),
-    fosteredBy: Joi.array().items(Joi.string()),
-    adoptedBy: Joi.array().items(Joi.string()),
+    fosteredBy: Joi.string(),
+    adoptedBy: Joi.string(),
   });
   return schema.validate(data);
 };

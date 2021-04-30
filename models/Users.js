@@ -26,8 +26,8 @@ const usersSchema = mongoose.Schema({
     type: String,
     required: true,
   },
-  // likedPets: [String],
-  // fosterdPets: [String],
-  // adoptedPets: [String],
+  likedPets: [ String ],
+  fosterdPets: [ String ],
+  adoptedPets: [ String ],
 });
 module.exports = mongoose.model("Users", usersSchema);

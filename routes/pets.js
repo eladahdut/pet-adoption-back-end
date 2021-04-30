@@ -1,6 +1,9 @@
 const express = require("express");
+const { updateMany } = require("../models/Pets");
 const router = express.Router();
 const Pets = require("../models/Pets");
+const Users = require("../models/Users");
+const { route } = require("./users");
 const verifyToken = require("./verifyToken");
 // const { number } = require("joi");
 
@@ -42,8 +45,8 @@ router.post("/pet", async (req, res) => {
     dietaryRestrictions,
     breed,
     likedBy: [],
-    fosteredBy: [],
-    adoptedBy: [],
+    fosteredBy: "",
+    adoptedBy: "",
   });
   try {
     const savedPet = await post.save();
@@ -56,15 +59,15 @@ router.post("/pet", async (req, res) => {
 //GET pet by ID
 router.get("/:petID", async (req, res) => {
   try {
-    const post = await Pets.findById(req.params.petID);
-    res.json(post);
+    const pet = await Pets.findById(req.params.petID);
+    res.json(pet);
   } catch (err) {
     res.json({ message: err });
   }
 });
 
 //DELETE pet by ID
-router.delete("/pet/:petId/save", async (req, res) => {
+router.delete("/pet/:petId/delete", async (req, res) => {
   try {
     const removedPet = await Pets.remove({ _id: req.params.petId });
     res.json(removedPet);
@@ -136,27 +139,124 @@ router.get("/search/:criteria", (req, res) => {
 
 // POST update adopt/foster pet (protected to logged in users)
 router.post("/pet/:id/adopt", verifyToken, async (req, res) => {
-  const { userId } = req.user._id;
+  const userId = req.user._id;
   const { adoptionStatus } = req.body;
   try {
-    const updatedPet = await Pets.updateOne(
-      { _id: req.params.id },
-      {
-        $switch: {
-          branches: [
-            { case: adoptionStatus === "Adopted", then: { $set: { adoptionStatus: `${adoptionStatus}` } } },
-            { case: adoptionStatus === "Fostered", then: { $set: { adoptionStatus: `${adoptionStatus}` } } },
-          ],
-          default: { $set: { adoptionStatus: "Available" } }
-        }
-      }
-    );
-    // const update = updatedPet.save();
-    res.json(updatedPet);
-    console.log(adoptionStatus);
+    const pet = await Pets.findById(req.params.id);
+    const user = await Users.findById(userId);
+    if (pet && user) {
+      if (pet.adoptionStatus.toLowerCase() === "available") {
+        pet.adoptionStatus = adoptionStatus
+        pet.fosteredBy = adoptionStatus === 'Fostered' ? userId : "";
+        pet.adoptedBy = adoptionStatus === 'Adopted' ? userId : "";
+        if (adoptionStatus === "Adopted") {
+          user.adoptedPets.push(req.params.id)
+        } else user.fosterdPets.push(req.params.id)
+
+        await Pets.findOneAndUpdate({ _id: req.params.id }, pet, { useFindAndModify: false, runValidators: true })
+        await Users.findOneAndUpdate({ _id: userId }, user, { useFindAndModify: false, runValidators: true })
+        const updatedPet = await Pets.findById(req.params.id);
+        const updatedUser = await Users.findById(userId);
+        res.status(200).json({ updatedPet, updatedUser, isSuccessful: true })
+      } else res.status(200).json("This pet is not available");
+
+    }
+    else res.status(200).json({ isSuccessful: false, message: 'Pet or user not found.' });
   } catch (err) {
     res.json({ message: err });
   }
 });
+
+//POST return pet from adopt/foster
+router.post('/pet/:id/return', verifyToken, async (req, res) => {
+  const userId = req.user._id;
+  try {
+    const pet = await Pets.findById(req.params.id);
+    const user = await Users.findById(userId);
+    if (pet && user) {
+      if (pet.adoptionStatus === "Fostered") {
+        user.fosterdPets = user.fosterdPets.filter((petId) => petId !== pet.id)
+      } else user.adoptedPets = user.adoptedPets.filter((petId) => petId !== pet.id)
+      pet.adoptionStatus = "Available";
+      await Pets.findOneAndUpdate({ _id: req.params.id }, pet, { useFindAndModify: false, runValidators: true })
+      await Users.findOneAndUpdate({ _id: userId }, user, { useFindAndModify: false, runValidators: true })
+      const updatedPet = await Pets.findById(req.params.id);
+      const updatedUser = await Users.findById(userId);
+      res.status(200).json({ updatedPet, updatedUser, isSuccessful: true })
+    } else res.status(200).json({ message: "User or pet not found", isSuccessful: false })
+  } catch (err) {
+    res.json({ message: err });
+  }
+});
+
+router.post("/pet/:id/save", verifyToken, async (req, res) => {
+  const userId = req.user._id;
+  try {
+    const user = await Users.findById(userId);
+    if (user && !user.likedPets.includes(req.params.id)) {
+      user.likedPets.push(req.params.id)
+      await Users.findOneAndUpdate({ _id: userId }, user, { useFindAndModify: false, runValidators: true })
+      const updatedUser = await Users.findById(userId);
+      res.json(updatedUser);
+    } else res.status(200).json({ message: "User not found or pet already liked", isSuccessful: false })
+  } catch (err) {
+    res.json({ message: err });
+  }
+});
+
+router.delete("/pet/:id/save", verifyToken, async (req, res) => {
+  const userId = req.user._id;
+  try {
+    const user = await Users.findById(userId);
+    if (user) {
+      user.likedPets = user.likedPets.filter((petId) => petId !== req.params.id)
+      await Users.findOneAndUpdate({ _id: userId }, user, { useFindAndModify: false, runValidators: true })
+      const updatedUser = await Users.findById(userId);
+      res.json(updatedUser);
+    } else res.status(200).json({ message: "User not found", isSuccessful: false })
+  } catch (err) {
+    res.json({ message: err });
+  }
+});
+
+
+// Get Pets By User ID API
+// Route ‘/pet/user/:id’ [GET]
+router.get("/pet/user/:id", async (req, res) => {
+  const userId = req.params.id;
+  const liked = [];
+  const owned = [];
+  try {
+    const user = await Users.findById(userId);
+    if (user) {
+      await Promise.all(
+        user.likedPets.map(async (petId) => {
+          const pet = await Pets.findById(petId);
+          if (pet) {
+            liked.push(pet);
+          }
+        })
+      );
+      await Promise.all(
+        user.adoptedPets.map(async (petId) => {
+          const pet = await Pets.findById(petId);
+          if (pet) {
+            owned.push(pet);
+          }
+        }));
+      await Promise.all(
+        user.fosterdPets.map(async (petId) => {
+          const pet = await Pets.findById(petId);
+          if (pet) {
+            owned.push(pet);
+          }
+        }));
+      res.json({ likedPets: liked, ownedPets: owned });
+    } else res.status(200).json({ message: "User not found", isSuccessful: false })
+  } catch (err) {
+    res.json({ message: err });
+  }
+})
+
 
 module.exports = router;
