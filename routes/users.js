@@ -19,7 +19,7 @@ router.get("/", async (req, res) => {
 router.post("/signup", async (req, res) => {
   //validate data before creating user
   const { error } = registerValidation(req.body);
-  if (error) return res.status(400).send(error.details[ 0 ].message);
+  if (error) return res.status(400).send(error.details[0].message);
 
   //checking if the user is already in the database
   const emailExist = await User.findOne({ email: req.body.email });
@@ -54,7 +54,7 @@ router.post("/signup", async (req, res) => {
 router.post("/login", async (req, res) => {
   //Validate date before user login
   const { error } = loginValidation(req.body);
-  if (error) return res.status(400).send(error.details[ 0 ].message);
+  if (error) return res.status(400).send(error.details[0].message);
   //Checking if the user exists
   const user = await User.findOne({ email: req.body.email });
   if (!user) return res.status(400).send("Email not found");
@@ -103,7 +103,7 @@ router.put("/user/:id", async (req, res) => {
           password: hashPassword,
         },
       }
-    )
+    );
     res.json(updatedUser);
   } catch (err) {
     res.json({ message: err });
