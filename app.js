@@ -18,4 +18,4 @@ app.get("/", (req, res) => {
   res.send("we are on home");
 });
 
-app.listen(5050);
+app.listen(3001);
