@@ -4,6 +4,7 @@ const User = require("../models/Users");
 const { registerValidation, loginValidation } = require("../validation");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const verifyToken = require("./verifyToken");
 
 //GET all users (***admin only***)
 router.get("/", async (req, res) => {
@@ -57,6 +58,7 @@ router.post("/login", async (req, res) => {
   if (error) return res.status(400).send(error.details[0].message);
   //Checking if the user exists
   const user = await User.findOne({ email: req.body.email });
+  console.log(user);
   if (!user) return res.status(400).send("Email not found");
   //Password is correct
   const validPass = await bcrypt.compare(req.body.password, user.password);
@@ -64,7 +66,11 @@ router.post("/login", async (req, res) => {
 
   //Create and assign a token
   const token = jwt.sign({ _id: user._id }, process.env.TOKEN_SECRET);
-  res.header("auth-token", token).send(token);
+  res.json({
+    userId: user.id,
+    userToken: token,
+    userName: `${user.firstName} ${user.lastName}`,
+  });
 });
 
 //GET user by id
