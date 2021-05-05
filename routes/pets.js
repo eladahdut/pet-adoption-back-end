@@ -120,7 +120,6 @@ router.patch("/pet/:petId", async (req, res) => {
 //GET pet by criteria
 router.get("/search/:criteria", (req, res) => {
   const mySearch = req.params.criteria;
-
   Pets.find({
     $and: [
       {
