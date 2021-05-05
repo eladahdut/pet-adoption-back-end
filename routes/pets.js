@@ -10,8 +10,8 @@ const verifyToken = require("./verifyToken");
 //GET all pets
 router.get("/", async (req, res) => {
   try {
-    const posts = await Pets.find();
-    res.json(posts);
+    const pets = await Pets.find();
+    res.json(pets);
   } catch (err) {
     res.json({ message: err });
   }
@@ -120,14 +120,18 @@ router.patch("/pet/:petId", async (req, res) => {
 //GET pet by criteria
 router.get("/search/:criteria", (req, res) => {
   const mySearch = req.params.criteria;
-  console.log(typeof mySearch);
+
   Pets.find({
-    $or: [
-      { adoptionStatus: mySearch },
-      { type: mySearch },
-      { name: mySearch },
-      { height: mySearch },
-      { weight: mySearch },
+    $and: [
+      {
+        $or: [
+          { adoptionStatus: mySearch },
+          { type: mySearch },
+          { name: mySearch },
+          { height: mySearch },
+          { weight: mySearch },
+        ],
+      },
     ],
   })
     .then((data) => {
@@ -220,12 +224,10 @@ router.post("/pet/:id/save", verifyToken, async (req, res) => {
       const updatedUser = await Users.findById(userId);
       res.json(updatedUser);
     } else
-      res
-        .status(200)
-        .json({
-          message: "User not found or pet already liked",
-          isSuccessful: false,
-        });
+      res.status(200).json({
+        message: "User not found or pet already liked",
+        isSuccessful: false,
+      });
   } catch (err) {
     res.json({ message: err });
   }

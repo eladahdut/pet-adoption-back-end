@@ -12,18 +12,18 @@ const PetsSchema = mongoose.Schema({
   adoptionStatus: {
     type: String,
     required: true,
-    default: "Available"
+    default: "Available",
   },
   picture: {
     type: String,
     required: true,
   },
   height: {
-    type: Number,
+    type: String,
     required: true,
   },
   weight: {
-    type: Number,
+    type: String,
     required: true,
   },
   color: {
@@ -46,7 +46,7 @@ const PetsSchema = mongoose.Schema({
     type: String,
     required: true,
   },
-  likedBy: [ String ],
+  likedBy: [String],
   fosteredBy: String,
   adoptedBy: String,
 });
