@@ -6,8 +6,27 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const verifyToken = require("./verifyToken");
 
+//GET user by token
+router.get("/user/token", verifyToken, async (req, res) => {
+
+  const found = await User.findById(req.user.id);
+  if (found) {
+    const newToken = jwt.sign({ id: found._id }, process.env.TOKEN_SECRET);
+    res.json({
+      userId: found._id,
+      userToken: newToken,
+      userName: `${found.firstName} ${found.lastName}`,
+      adoptedPets: found.adoptedPets,
+      fosterdPets: found.fosterdPets,
+      likedPets: found.likedPets,
+    });
+  } else {
+    res.json(null)
+  }
+})
+
 //GET all users (***admin only***)
-router.get("/", async (req, res) => {
+router.get("/", verifyToken, async (req, res) => {
   try {
     const users = await User.find();
     res.json(users);
@@ -20,7 +39,7 @@ router.get("/", async (req, res) => {
 router.post("/signup", async (req, res) => {
   //validate data before creating user
   const { error } = registerValidation(req.body);
-  if (error) return res.status(400).send(error.details[0].message);
+  if (error) return res.status(400).send(error.details[ 0 ].message);
 
   //checking if the user is already in the database
   const emailExist = await User.findOne({ email: req.body.email });
@@ -55,7 +74,7 @@ router.post("/signup", async (req, res) => {
 router.post("/login", async (req, res) => {
   //Validate date before user login
   const { error } = loginValidation(req.body);
-  if (error) return res.status(400).send(error.details[0].message);
+  if (error) return res.status(400).send(error.details[ 0 ].message);
   //Checking if the user exists
   const user = await User.findOne({ email: req.body.email });
   if (!user) return res.status(400).send("Email not found");
@@ -65,16 +84,19 @@ router.post("/login", async (req, res) => {
   if (!validPass) return res.status(400).send("Invalid password");
 
   //Create and assign a token
-  const token = jwt.sign({ _id: user._id }, process.env.TOKEN_SECRET);
+  const token = jwt.sign({ id: user._id }, process.env.TOKEN_SECRET);
   res.json({
     userId: user.id,
     userToken: token,
     userName: `${user.firstName} ${user.lastName}`,
+    adoptedPets: user.adoptedPets,
+    fosterdPets: user.fosterdPets,
+    likedPets: user.likedPets,
   });
 });
 
 //GET user by id
-router.get("/user/:id", async (req, res) => {
+router.get("/user/:id", verifyToken, async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
     const { firstName, lastName, phone, email } = user;
@@ -94,7 +116,7 @@ router.get("/user/:id", async (req, res) => {
 // });
 
 //PUT update user info
-router.put("/user/:id", async (req, res) => {
+router.put("/user/:id", verifyToken, async (req, res) => {
   const salt = await bcrypt.genSalt(10);
   const hashPassword = await bcrypt.hash(req.body.password, salt);
   try {

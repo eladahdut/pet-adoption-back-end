@@ -46,7 +46,7 @@ const PetsSchema = mongoose.Schema({
     type: String,
     required: true,
   },
-  likedBy: [String],
+  likedBy: [ String ],
   fosteredBy: String,
   adoptedBy: String,
 });

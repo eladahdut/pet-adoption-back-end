@@ -209,11 +209,12 @@ router.post("/pet/:id/return", verifyToken, async (req, res) => {
   }
 });
 
+//POST like pet
 router.post("/pet/:id/save", async (req, res) => {
   const userId = req.body.userId;
   try {
     const user = await Users.findById(userId);
-    console.log(user);
+
     if (user && !user.likedPets.includes(req.params.id)) {
       user.likedPets.push(req.params.id);
       await Users.findOneAndUpdate({ _id: userId }, user, {
@@ -221,20 +222,26 @@ router.post("/pet/:id/save", async (req, res) => {
         runValidators: true,
       });
       const updatedUser = await Users.findById(userId);
-      res.json(updatedUser);
-    } else
+      res.json(updatedUser.likedPets);
+    } else if (user) {
+      res.json(user.likedPets)
+    } else {
       res.status(200).json({
         message: "User not found or pet already liked",
         isSuccessful: false,
-      });
+      })
+
+    }
   } catch (err) {
     res.json({ message: err });
   }
 });
 
-router.delete("/pet/:id/save", async (req, res) => {
-  const userId = req.user._id;
+//DELETE unlike pet
+router.delete("/pet/:id/save/:userId", async (req, res) => {
+  const userId = req.params.userId;
   try {
+
     const user = await Users.findById(userId);
     if (user) {
       user.likedPets = user.likedPets.filter(
@@ -245,9 +252,12 @@ router.delete("/pet/:id/save", async (req, res) => {
         runValidators: true,
       });
       const updatedUser = await Users.findById(userId);
-      res.json(updatedUser);
-    } else
+      res.json(updatedUser.likedPets);
+    } else if (user) {
+      res.json(user.likedPets);
+    } else {
       res.status(200).json({ message: "User not found", isSuccessful: false });
+    }
   } catch (err) {
     res.json({ message: err });
   }
