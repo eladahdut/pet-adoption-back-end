@@ -60,7 +60,6 @@ router.post("/pet", async (req, res) => {
 router.get("/:petID", async (req, res) => {
   try {
     const pet = await Pets.findById(req.params.petID);
-    console.log(req.params.petID);
     res.json(pet);
   } catch (err) {
     res.json({ message: err });
@@ -142,8 +141,8 @@ router.get("/search/:criteria", (req, res) => {
 });
 
 // POST update adopt/foster pet (protected to logged in users)
-router.post("/pet/:id/adopt", verifyToken, async (req, res) => {
-  const userId = req.user._id;
+router.post("/pet/:id/adopt", async (req, res) => {
+  const userId = req.body.userId;
   const { adoptionStatus } = req.body;
   try {
     const pet = await Pets.findById(req.params.id);
@@ -210,10 +209,11 @@ router.post("/pet/:id/return", verifyToken, async (req, res) => {
   }
 });
 
-router.post("/pet/:id/save", verifyToken, async (req, res) => {
-  const userId = req.user._id;
+router.post("/pet/:id/save", async (req, res) => {
+  const userId = req.body.userId;
   try {
     const user = await Users.findById(userId);
+    console.log(user);
     if (user && !user.likedPets.includes(req.params.id)) {
       user.likedPets.push(req.params.id);
       await Users.findOneAndUpdate({ _id: userId }, user, {
@@ -232,7 +232,7 @@ router.post("/pet/:id/save", verifyToken, async (req, res) => {
   }
 });
 
-router.delete("/pet/:id/save", verifyToken, async (req, res) => {
+router.delete("/pet/:id/save", async (req, res) => {
   const userId = req.user._id;
   try {
     const user = await Users.findById(userId);
