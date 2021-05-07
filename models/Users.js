@@ -1,3 +1,4 @@
+const { number } = require("joi");
 const mongoose = require("mongoose");
 
 const usersSchema = mongoose.Schema({
@@ -29,5 +30,6 @@ const usersSchema = mongoose.Schema({
   likedPets: [ String ],
   fosterdPets: [ String ],
   adoptedPets: [ String ],
+  userType: { type: Number, default: 2 }
 });
 module.exports = mongoose.model("Users", usersSchema);

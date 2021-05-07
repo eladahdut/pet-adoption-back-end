@@ -1,11 +1,15 @@
 const express = require("express");
+const { uploadToCloudinary } = require("../cloudinary");
 const { updateMany } = require("../models/Pets");
 const router = express.Router();
 const Pets = require("../models/Pets");
 const Users = require("../models/Users");
+const { upload } = require("../multer");
 const { route } = require("./users");
 const verifyToken = require("./verifyToken");
+const fs = require('fs');
 // const { number } = require("joi");
+
 
 //GET all pets
 router.get("/", async (req, res) => {
@@ -265,7 +269,7 @@ router.delete("/pet/:id/save/:userId", async (req, res) => {
 
 // Get Pets By User ID API
 // Route ‘/pet/user/:id’ [GET]
-router.get("/pet/user/:id", async (req, res) => {
+router.get("/pet/user/:id", verifyToken, async (req, res) => {
   const userId = req.params.id;
   const liked = [];
   const owned = [];
@@ -303,5 +307,14 @@ router.get("/pet/user/:id", async (req, res) => {
     res.json({ message: err });
   }
 });
+
+router.post('/picture',
+  verifyToken,
+  upload.single('file'),
+  async (req, res) => {
+    const result = await uploadToCloudinary(req.file.path);
+    fs.unlinkSync(req.file.path);
+    res.send({ pictureUrl: result.secure_url });
+  });
 
 module.exports = router;

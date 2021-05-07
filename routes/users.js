@@ -19,6 +19,7 @@ router.get("/user/token", verifyToken, async (req, res) => {
       adoptedPets: found.adoptedPets,
       fosterdPets: found.fosterdPets,
       likedPets: found.likedPets,
+      userType: found.userType
     });
   } else {
     res.json(null)
@@ -64,7 +65,16 @@ router.post("/signup", async (req, res) => {
   });
   try {
     const savedUser = await user.save();
-    res.json(savedUser);
+    const token = jwt.sign({ id: savedUser._id }, process.env.TOKEN_SECRET);
+    res.json({
+      userId: savedUser.id,
+      userToken: token,
+      userName: `${savedUser.firstName} ${savedUser.lastName}`,
+      adoptedPets: savedUser.adoptedPets,
+      fosterdPets: savedUser.fosterdPets,
+      likedPets: savedUser.likedPets,
+      userType: savedUser.userType
+    });
   } catch (err) {
     res.json({ message: err });
   }
@@ -92,6 +102,7 @@ router.post("/login", async (req, res) => {
     adoptedPets: user.adoptedPets,
     fosterdPets: user.fosterdPets,
     likedPets: user.likedPets,
+    userType: user.userType
   });
 });
 
