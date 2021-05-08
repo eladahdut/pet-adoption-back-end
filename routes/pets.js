@@ -145,7 +145,7 @@ router.get("/search/:criteria", (req, res) => {
 });
 
 // POST update adopt/foster pet (protected to logged in users)
-router.post("/pet/:id/adopt", async (req, res) => {
+router.post("/pet/:id/adopt", verifyToken, async (req, res) => {
   const userId = req.body.userId;
   const { adoptionStatus } = req.body;
   try {
@@ -183,7 +183,7 @@ router.post("/pet/:id/adopt", async (req, res) => {
 
 //POST return pet from adopt/foster
 router.post("/pet/:id/return", verifyToken, async (req, res) => {
-  const userId = req.user._id;
+  const userId = req.body.userId;
   try {
     const pet = await Pets.findById(req.params.id);
     const user = await Users.findById(userId);
