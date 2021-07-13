@@ -84,14 +84,17 @@ router.post("/signup", async (req, res) => {
 router.post("/login", async (req, res) => {
   //Validate date before user login
   const { error } = loginValidation(req.body);
-  if (error) return res.status(400).send(error.details[ 0 ].message);
+  if (error) return res.status(400).json({ message: "password/email not valid" })
+  // send(error.details[ 0 ].message);
   //Checking if the user exists
   const user = await User.findOne({ email: req.body.email });
-  if (!user) return res.status(400).send("Email not found");
+  if (!user) return res.status(400).json({ message: "Email not found" })
+  // send("Email not found");
   //Password is correct
   //hash pass first
   const validPass = await bcrypt.compare(req.body.password, user.password);
-  if (!validPass) return res.status(400).send("Invalid password");
+  if (!validPass) return res.status(400).json({ message: "Invalid password" })
+  // send("Invalid password");
 
   //Create and assign a token
   const token = jwt.sign({ id: user._id }, process.env.TOKEN_SECRET);
