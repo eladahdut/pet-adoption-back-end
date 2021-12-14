@@ -18,5 +18,5 @@ app.get("/", (req, res) => {
   res.send("we are on home");
 });
 
-const port_number = server.listen(process.env.PORT || 3000);
-app.listen(port_number);
+// const port_number = server.listen(process.env.PORT || 3000);
+app.listen(process.env.PORT || 3000);
